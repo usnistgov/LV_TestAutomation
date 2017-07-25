@@ -25,6 +25,7 @@ def npType_to_XMLType(npType):
         np.uint64 :'U64',
         np.float16 :'SGL',
         np.float32 :'DBL',
+        float      :'DBL',
         np.float64 :'EXT',
         np.complex64 :'CDB',
         np.complex128 :'CXT',       
