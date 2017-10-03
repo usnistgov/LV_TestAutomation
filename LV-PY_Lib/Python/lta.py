@@ -101,6 +101,7 @@ class Lta():
             packet.SendPacket(self.s, xml)
             CommsData = packet.ReceivePacket(self.s)
             CommsData = Lta_Parse(CommsData); #print CommsData
+            return CommsData
             assert CommsData['CommsData']['Command']=='LtaRunComplete', "Run was not acknowledged as completed"
         except (IOError, Exception) as e:
             raise e
