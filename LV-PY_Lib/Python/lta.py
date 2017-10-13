@@ -72,6 +72,8 @@ class Lta():
             xml = Lta_Unparse(cmd.cmdDict)
             packet.SendPacket(self.s,xml)
             CommsData = packet.ReceivePacket(self.s)
+            print "Commsdata received by get command"
+            print CommsData
             CommsData = Lta_Parse(CommsData)
             CommsData = Lta_Parse(CommsData['CommsData']['XMLData'])
             return CommsData
@@ -87,10 +89,26 @@ class Lta():
             self.s.settimeout(1)            
             packet.SendPacket(self.s,xml)
             self.s.settimeout(UsrTimeout)           
-            CommsData = packet.ReceivePacket(self.s)
-            CommsData = Lta_Parse(CommsData)
-            CommsData = Lta_Parse(CommsData['CommsData']['XMLData'])
-            return CommsData
+            IsError = True
+            n = 0
+            nmax = 50
+            #loop needed to receive all packages from LV
+            while IsError and n<=nmax:
+                CommsData = packet.ReceivePacket(self.s)
+                CommsData = Lta_Parse(CommsData);
+                print CommsData
+                IsError = CommsData['CommsData']['Command']!='LtaSetComplete'
+                if IsError:
+                    Error = CommsData
+                n = n + 1
+           
+            if n>nmax:
+                print "Set was not acknowledged as completed"
+            if n>1:
+                return Error #only the last error will be reported for now
+            else:
+                return "Set succeeded with no errors"
+
         except (IOError, Exception) as e:
             raise e
     
@@ -99,10 +117,26 @@ class Lta():
             cmdDict = Lta_Command('run',"").cmdDict
             xml = Lta_Unparse(cmdDict);
             packet.SendPacket(self.s, xml)
-            CommsData = packet.ReceivePacket(self.s)
-            CommsData = Lta_Parse(CommsData); #print CommsData
-            return CommsData
-            assert CommsData['CommsData']['Command']=='LtaRunComplete', "Run was not acknowledged as completed"
+            IsError = True
+            n = 0
+            nmax = 50
+            #loop needed to receive all packages from LV
+            while IsError and n<=nmax:
+                CommsData = packet.ReceivePacket(self.s)
+                CommsData = Lta_Parse(CommsData);
+                print CommsData
+                IsError = CommsData['CommsData']['Command']!='LtaRunComplete'
+                if IsError:
+                    Error = CommsData
+                n = n + 1
+            
+            if n>nmax:
+                print "Run was not acknowledged as completed"
+            if n>1:
+                return Error #only the last error will be reported for now
+            else:
+                return "Run succeeded with no errors"
+
         except (IOError, Exception) as e:
             raise e
 
