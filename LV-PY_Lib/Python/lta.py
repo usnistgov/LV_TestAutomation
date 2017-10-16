@@ -103,6 +103,15 @@ class Lta():
                 return Data
 
         except (IOError, Exception) as e:
+            #clear the messages before raising e
+            print "Got exception, clearing get command messages"
+            IsError = True; n = 0; nmax = 50
+            while IsError and n<=nmax:
+                CommsData = Lta_Parse(packet.ReceivePacket(self.s))
+                IsError = CommsData['CommsData']['Command']!='LtaGetComplete'
+                print "CommsData"
+                print CommsData
+                n += 1
             raise e
             
     def __set__(self,arg,dataStruct):
@@ -135,6 +144,15 @@ class Lta():
                 return "Set succeeded with no errors"
 
         except (IOError, Exception) as e:
+            #clear the messages before raising e
+            print "Got exception, clearing set command messages"
+            IsError = True; n = 0; nmax = 50
+            while IsError and n<=nmax:
+                CommsData = Lta_Parse(packet.ReceivePacket(self.s))
+                IsError = CommsData['CommsData']['Command']!='LtaSetComplete'
+                print "CommsData"
+                print CommsData
+                n += 1
             raise e
     
     def __run__(self):
@@ -143,8 +161,7 @@ class Lta():
             xml = Lta_Unparse(cmdDict);
             packet.SendPacket(self.s, xml)
             IsError = True
-            n = 0
-            nmax = 50
+            n = 0; nmax = 50
             #loop needed to receive all packages from LV
             while IsError and n<=nmax:
                 CommsData = packet.ReceivePacket(self.s)
@@ -153,7 +170,7 @@ class Lta():
                 IsError = CommsData['CommsData']['Command']!='LtaRunComplete'
                 if IsError:
                     Error = CommsData
-                n = n + 1
+                n += 1
             
             if n>nmax:
                 print "Run was not acknowledged as completed"
@@ -163,6 +180,15 @@ class Lta():
                 return "Run succeeded with no errors"
 
         except (IOError, Exception) as e:
+            #clear the messages before raising e
+            print "Got exception, clearing run command messages"
+            IsError = True; n = 0; nmax = 50
+            while IsError and n<=nmax:
+                CommsData = Lta_Parse(packet.ReceivePacket(self.s))
+                IsError = CommsData['CommsData']['Command']!='LtaRunComplete'
+                print "CommsData"
+                print CommsData
+                n += 1
             raise e
 
 if __name__=='__main__':
