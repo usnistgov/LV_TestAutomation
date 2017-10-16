@@ -65,18 +65,43 @@ class Lta():
     def __get__(self,arg):
         """ for now, arg is the XML string of the get command """
         try:
+            "Getting params ..."
             UsrTimeout = self.s.gettimeout()            
             self.s.settimeout(1)
             cmd = Lta_Command('get', arg)
             self.s.settimeout(UsrTimeout)
             xml = Lta_Unparse(cmd.cmdDict)
             packet.SendPacket(self.s,xml)
-            CommsData = packet.ReceivePacket(self.s)
-            print "Commsdata received by get command"
-            print CommsData
-            CommsData = Lta_Parse(CommsData)
-            CommsData = Lta_Parse(CommsData['CommsData']['XMLData'])
-            return CommsData
+            IsError = True
+            n = 0
+            nmax = 50
+            
+            #loop needed to receive all packages from LV
+            while IsError and n<=nmax:
+                CommsData = packet.ReceivePacket(self.s)
+                CommsData = Lta_Parse(CommsData);
+                if CommsData['CommsData']['Command'] == 'Get':
+                    Data = Lta_Parse(CommsData['CommsData']['XMLData'])
+                    print "Data received"
+                    print Data
+                else:
+                    print CommsData
+                    IsError = CommsData['CommsData']['Command']!='LtaGetComplete'
+                    print IsError
+                    if IsError:
+                        Error = CommsData
+                n = n + 1
+                print n
+           
+            if n>nmax:
+                print "Get was not acknowledged as completed"
+            if IsError:
+                print "Get got an error"
+                print Error #only the last error will be reported for now
+            else:
+                print "Get succeeded with no errors"
+                return Data
+
         except (IOError, Exception) as e:
             raise e
             
