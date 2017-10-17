@@ -8,6 +8,7 @@ from lta_err import Lta_Error
 import socket
 import packet
 import sys
+import time
  
 class Lta_Command():
     """ This object is a wrapper dictionary that wraps an Lta "dataStruct" 
@@ -65,54 +66,40 @@ class Lta():
     def __get__(self,arg):
         """ for now, arg is the XML string of the get command """
         try:
-            "Getting params ..."
             UsrTimeout = self.s.gettimeout()            
             self.s.settimeout(1)
             cmd = Lta_Command('get', arg)
             self.s.settimeout(UsrTimeout)
             xml = Lta_Unparse(cmd.cmdDict)
             packet.SendPacket(self.s,xml)
-            IsError = True
-            n = 0
-            nmax = 50
-            
+            Completed = False
+            n = 0; nmax = 50
             #loop needed to receive all packages from LV
-            while IsError and n<=nmax:
+            while (not Completed) and n<=nmax:
                 CommsData = packet.ReceivePacket(self.s)
                 CommsData = Lta_Parse(CommsData);
                 if CommsData['CommsData']['Command'] == 'Get':
                     Data = Lta_Parse(CommsData['CommsData']['XMLData'])
-                    print "Data received"
-                    print Data
                 else:
-                    print CommsData
-                    IsError = CommsData['CommsData']['Command']!='LtaGetComplete'
-                    print IsError
-                    if IsError:
-                        Error = CommsData
-                n = n + 1
-                print n
+                    Completed = CommsData['CommsData']['Command']=='LtaGetComplete'
+                    Error = Lta_Parse(CommsData['CommsData']['XMLData'])
+                n += 1
            
             if n>nmax:
                 print "Get was not acknowledged as completed"
-            if IsError:
-                print "Get got an error"
-                print Error #only the last error will be reported for now
+            if n>2:
+                return Error #only the last error will be reported for now
             else:
-                print "Get succeeded with no errors"
                 return Data
 
         except (IOError, Exception) as e:
             #clear the messages before raising e
             print "Got exception, clearing get command messages"
-            IsError = True; n = 0; nmax = 50
-            while IsError and n<=nmax:
+            Completed = False; n = 0; nmax = 50
+            while (not Completed) and n<=nmax:
                 CommsData = Lta_Parse(packet.ReceivePacket(self.s))
-                IsError = CommsData['CommsData']['Command']!='LtaGetComplete'
-                print "CommsData"
-                print CommsData
-                n += 1
-            raise e
+                Completed = CommsData['CommsData']['Command']=='LtaGetComplete'
+            raise e("Fatal error: get command.")
             
     def __set__(self,arg,dataStruct):
         try:
@@ -123,36 +110,57 @@ class Lta():
             self.s.settimeout(1)            
             packet.SendPacket(self.s,xml)
             self.s.settimeout(UsrTimeout)           
-            IsError = True
-            n = 0
-            nmax = 50
+            Completed = False
+            n = 0; nmax = 50
             #loop needed to receive all packages from LV
-            while IsError and n<=nmax:
+            while (not Completed) and n<=nmax:
                 CommsData = packet.ReceivePacket(self.s)
                 CommsData = Lta_Parse(CommsData);
-                print CommsData
-                IsError = CommsData['CommsData']['Command']!='LtaSetComplete'
-                if IsError:
-                    Error = CommsData
-                n = n + 1
-           
+                #print CommsData
+                Completed = CommsData['CommsData']['Command']=='LtaSetComplete'
+                if Completed:
+                    NoError = Lta_Parse(CommsData['CommsData']['XMLData'])
+                else:
+                    Error = Lta_Parse(CommsData['CommsData']['XMLData'])
+                n += 1
+            
             if n>nmax:
                 print "Set was not acknowledged as completed"
             if n>1:
-                return Error #only the last error will be reported for now
+                return Error
             else:
-                return "Set succeeded with no errors"
+                return NoError
 
         except (IOError, Exception) as e:
             #clear the messages before raising e
             print "Got exception, clearing set command messages"
-            IsError = True; n = 0; nmax = 50
-            while IsError and n<=nmax:
+            Completed = False; n = 0; nmax = 50
+            while (not Completed) and n<=nmax:
                 CommsData = Lta_Parse(packet.ReceivePacket(self.s))
-                IsError = CommsData['CommsData']['Command']!='LtaSetComplete'
-                print "CommsData"
-                print CommsData
-                n += 1
+                Completed = CommsData['CommsData']['Command']=='LtaSetComplete'
+            raise e("Fatal error: set command.")
+
+    def __multirun__(self,ntries,secwait,ecode):
+        #tries to run 'ntries' times if get error code 'ecode', waiting 'secwait' seconds before trying again
+        #ecode is a set of error codes
+        try:
+            print "Trying multiple runs"
+            Error = self.__run__()
+            j = 1
+            while (Error['error']['code'] in ecode) and j<ntries:
+                print Error['error']['code'],"Error. " #, Error['error']['source']
+                print "Trying again in", secwait, " seconds",
+                for k in range(1,secwait+1):
+                    time.sleep(1)
+                    print ".",
+                print "Try to run ", j+1
+                Error = self.__run__()
+                j += 1
+            if j==ntries:
+                raise Exception("Critical error: Run exceeded maximum allowed tries.")
+            else:
+                return Error
+        except (IOError, Exception) as e:
             raise e
     
     def __run__(self):
@@ -160,36 +168,36 @@ class Lta():
             cmdDict = Lta_Command('run',"").cmdDict
             xml = Lta_Unparse(cmdDict);
             packet.SendPacket(self.s, xml)
-            IsError = True
+            Completed = False
             n = 0; nmax = 50
             #loop needed to receive all packages from LV
-            while IsError and n<=nmax:
+            while (not Completed) and n<=nmax:
                 CommsData = packet.ReceivePacket(self.s)
                 CommsData = Lta_Parse(CommsData);
-                print CommsData
-                IsError = CommsData['CommsData']['Command']!='LtaRunComplete'
-                if IsError:
-                    Error = CommsData
+                #print CommsData
+                Completed = CommsData['CommsData']['Command']=='LtaRunComplete'
+                if Completed:
+                    NoError = Lta_Parse(CommsData['CommsData']['XMLData'])
+                else:
+                    Error = Lta_Parse(CommsData['CommsData']['XMLData'])
                 n += 1
             
             if n>nmax:
                 print "Run was not acknowledged as completed"
             if n>1:
-                return Error #only the last error will be reported for now
+                return Error
             else:
-                return "Run succeeded with no errors"
-
+                print "Run complete"
+                return NoError
+            
         except (IOError, Exception) as e:
             #clear the messages before raising e
-            print "Got exception, clearing run command messages"
-            IsError = True; n = 0; nmax = 50
-            while IsError and n<=nmax:
+            print "Got exception, clearing run command messages."
+            Completed = False; n = 0; nmax = 50
+            while (not Completed) and n<=nmax:
                 CommsData = Lta_Parse(packet.ReceivePacket(self.s))
-                IsError = CommsData['CommsData']['Command']!='LtaRunComplete'
-                print "CommsData"
-                print CommsData
-                n += 1
-            raise e
+                Completed = CommsData['CommsData']['Command']=='LtaRunComplete'
+            raise e("Fatal error: run command.")
 
 if __name__=='__main__':
     try:

@@ -16,6 +16,7 @@
 			<Item Name="packet.py" Type="Document" URL="../Python/packet.py"/>
 		</Item>
 		<Item Name="Scripts" Type="Folder">
+			<Item Name="mainScript.py" Type="Document" URL="../Scripts/mainScript.py"/>
 			<Item Name="TestScript.py" Type="Document" URL="../Scripts/TestScript.py"/>
 		</Item>
 	</Item>
