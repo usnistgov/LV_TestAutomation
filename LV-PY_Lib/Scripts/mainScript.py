@@ -479,7 +479,7 @@ try:
     
     for ex in ex_list:
         err = Lta_Error(ex,sys.exc_info())  #format a labview error
-        lta.send_error(err,3,'Abort')       #send the error to labview for display
+        lta.send_error(err,3,'log')       #send the error to labview for log
 
 #------------------all scripts should send their errors to labview------------
 except Exception as ex:
