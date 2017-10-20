@@ -96,10 +96,13 @@ class Lta():
             #clear the messages before raising e
             print "Got exception, clearing get command messages"
             Completed = False; n = 0; nmax = 50
-            while (not Completed) and n<=nmax:
-                CommsData = Lta_Parse(packet.ReceivePacket(self.s))
-                Completed = CommsData['CommsData']['Command']=='LtaGetComplete'
-            raise e("Fatal error: get command.")
+            try:
+                while (not Completed) and n<=nmax:
+                    CommsData = Lta_Parse(packet.ReceivePacket(self.s))
+                    Completed = CommsData['CommsData']['Command']=='LtaGetComplete'
+            except Exception as e:
+                raise type(e)("Could not clear messages." + e.message)
+            raise type(e)("Fatal error: lta.__get__ command." + e.message)
             
     def __set__(self,arg,dataStruct):
         try:
@@ -135,10 +138,13 @@ class Lta():
             #clear the messages before raising e
             print "Got exception, clearing set command messages"
             Completed = False; n = 0; nmax = 50
-            while (not Completed) and n<=nmax:
-                CommsData = Lta_Parse(packet.ReceivePacket(self.s))
-                Completed = CommsData['CommsData']['Command']=='LtaSetComplete'
-            raise e("Fatal error: set command.")
+            try:
+                while (not Completed) and n<=nmax:
+                    CommsData = Lta_Parse(packet.ReceivePacket(self.s))
+                    Completed = CommsData['CommsData']['Command']=='LtaSetComplete'
+            except Exception as e:
+                raise type(e)("Could not clear messages." + e.message)
+            raise type(e)("Fatal error: lta.__set__ command." + e.message)
 
     def __multirun__(self,ntries,secwait,ecode):
         #tries to run 'ntries' times if get error code 'ecode', waiting 'secwait' seconds before trying again
@@ -147,7 +153,7 @@ class Lta():
             print "Trying multiple runs"
             Error = self.__run__()
             j = 1
-            while (Error['error']['code'] in ecode) and j<ntries:
+            while (Error['error']['code'] in ecode) and j<=ntries:
                 print Error['error']['code'],"Error. " #, Error['error']['source']
                 print "Trying again in", secwait, " seconds",
                 for k in range(1,secwait+1):
@@ -156,12 +162,13 @@ class Lta():
                 print "Try to run ", j+1
                 Error = self.__run__()
                 j += 1
-            if j==ntries:
+            if j>ntries:
+                print "Critical error: Run exceeded maximum allowed tries."
                 raise Exception("Critical error: Run exceeded maximum allowed tries.")
             else:
                 return Error
         except (IOError, Exception) as e:
-            raise e
+            raise type(e)("Fatal error: lta.__multirun__ command." + e.message)
     
     def __run__(self):
         try:
@@ -194,10 +201,13 @@ class Lta():
             #clear the messages before raising e
             print "Got exception, clearing run command messages."
             Completed = False; n = 0; nmax = 50
-            while (not Completed) and n<=nmax:
-                CommsData = Lta_Parse(packet.ReceivePacket(self.s))
-                Completed = CommsData['CommsData']['Command']=='LtaRunComplete'
-            raise e("Fatal error: run command.")
+            try:
+                while (not Completed) and n<=nmax:
+                    CommsData = Lta_Parse(packet.ReceivePacket(self.s))
+                    Completed = CommsData['CommsData']['Command']=='LtaRunComplete'
+            except Exception as e:
+                raise type(e)("Could not clear messages." + e.message)
+            raise type(e)("Fatal error: lta.__run__ command." + e.message)
 
 if __name__=='__main__':
     try:
