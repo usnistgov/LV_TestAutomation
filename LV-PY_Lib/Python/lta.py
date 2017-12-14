@@ -151,6 +151,7 @@ class Lta():
         #ecode is a set of error codes
         try:
             print "Trying multiple runs"
+            time.sleep(3)  #wait some time before running
             Error = self.__run__()
             j = 1
             while (Error['error']['code'] in ecode) and j<=ntries:

@@ -51,6 +51,16 @@ class StdTests(object):
         try:
             """ Sets initial default values to the framework"""
             print("Setting default params")
+            
+            #Setting Config - MUST be done before setting time
+            WfrmConfig=self.lta.__get__('test.wfrm.config')
+            WfrmConfig['WfrmConfig']['T0(UTC)'] = float(0.)
+            WfrmConfig['WfrmConfig']['F0'] = float(self.Fnom)
+            WfrmConfig['WfrmConfig']['Fs'] = int(self.Fs)  
+            WfrmConfig['WfrmConfig']['FSamp'] = int(self.Fsamp)
+            Error = self.lta.__set__('test.wfrm.config',WfrmConfig)
+            #print WfrmConfig
+
             #Setting Time
             WfrmTime=self.lta.__get__('test.wfrm.time')
             #print WfrmTime
@@ -59,15 +69,6 @@ class StdTests(object):
 
             Error = self.lta.__set__('test.wfrm.time',WfrmTime)
             #print Error
-            
-            #Setting Config
-            WfrmConfig=self.lta.__get__('test.wfrm.config')
-            WfrmConfig['WfrmConfig']['T0(UTC)'] = float(0.)
-            WfrmConfig['WfrmConfig']['F0'] = float(self.Fnom)
-            WfrmConfig['WfrmConfig']['Fs'] = int(self.Fs)  
-            WfrmConfig['WfrmConfig']['FSamp'] = int(self.Fsamp)
-            Error = self.lta.__set__('test.wfrm.config',WfrmConfig)
-            #print WfrmConfig
             
             #Setting Waveform Params
             WfrmParams = self.lta.__get__('test.wfrm.params')    
