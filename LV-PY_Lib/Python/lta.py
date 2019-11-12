@@ -154,7 +154,7 @@ class Lta():
             #time.sleep(3)  #wait some time before running
             Error = self.__run__()
             j = 1
-            while (Error['error']['code'] in ecode) and j<=ntries:
+            while (Error['error constant']['code'] in ecode) and j<=ntries:
                 print Error['error']['code'],"Error. " #, Error['error']['source']
                 print "Trying again in", secwait, " seconds",
                 for k in range(1,secwait+1):
