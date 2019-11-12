@@ -1,3 +1,4 @@
 /LV-PY_Lib/Python/*.pyc
 /*.aliases
 /*.lvlps
+/LV-PY_Lib/Scripts/*.pyc
