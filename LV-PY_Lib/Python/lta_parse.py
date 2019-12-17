@@ -6,12 +6,28 @@
     to be in the same order at the typedef being unflattened to.  Since Python Dictionaries
     have no concept of order, we must use Ordered Dictionaries instead.    
 """
-
+# class for the labview EMUM control
+class EW:
+    Name = ""
+    Choice = []
+    Val = 0
+    
+    def __repr__(self):
+        return "EW"
+    def __str__(self):
+        s = "','"
+        s="['"+s.join(self.Choice)+"']"
+        return "Name: "+self.Name+" Choice: "+s+" Val: "+str(self.Val)
+    def __call__(self,i):
+        return self.Choice[i]
+    
 import sys
 from collections import OrderedDict
 from lxml import etree
 from lta_err import Lta_Error
 import numpy as np
+
+
 
 def getRootDoc(xml):
     xml = '<item>'+xml+'</item>'
@@ -121,6 +137,28 @@ def XMLType_to_npType(XMLType):
     npType =switch.get(XMLType)
     assert (npType != None),'Error in XML_to_npType: unrecognized XMLType: {0}'.format(XMLType)
     return npType
+    
+def parseEnum(child):  
+    retVal = EW()
+    for node in child:
+        tag = node.tag
+        if tag == 'Name':
+            name = node.text
+            retVal.Name= name
+        elif node.tag == 'Choice':
+            val = node.text
+            if val is None:
+                val = ""
+            retVal.Choice.append(val)
+        elif node.tag =='Val':
+            val = node.text
+            if val is None:
+                val = "0"
+            retVal.Val=int(val)
+        else:
+            pass
+    return retVal
+    
 
 def parseArray(node):
     dimSizes = []
@@ -180,6 +218,9 @@ def parseCluster(child):
             elif node.tag == 'Array':
                 arrayList = parseArray(node)
                 retVal[name][arrayList[0]]=arrayList[1]
+            elif node.tag == 'EW':
+                enum = parseEnum(node)    
+                retVal[name][enum.Name]=enum
             elif node.tag == 'Cluster':   # Nested Clusters
                 for subName, subVal in parseCluster(node).iteritems():
                     retVal[name][subName]=subVal
@@ -223,6 +264,9 @@ def Lta_Parse(xml):
             elif tag == 'Array':
                 val = parseArray(child)
                 val = {val[0]: val[1]}
+            elif tag == 'EW':
+                val = parseEnum(child)
+                val = {val.Name: val}
             else:                           # data that is not in a string or array
                 val = parseData(child)
             topDict.update(val)         
@@ -236,7 +280,7 @@ if __name__=='__main__':
     # Test the parser
     import os
  
-    fileRelPath = 'nested.xml'   # has 2 nested clusters    
+    fileRelPath = 'Test\enumData.xml'   # has 2 nested clusters    
 #    fileRelPath = 'err.xml'     #LabVIEW formatted error messege
 #    fileRelPath = 'clData.xml'  # Cluster Data
 #    fileRelPath = 'arData.xml'  # Array Data

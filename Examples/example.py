@@ -17,6 +17,12 @@ try:
         error = lta.__run__()
         CommsData = lta.__get__('D')
         print CommsData['D']
+        
+    CommsData = lta.__get__('Enum')  
+    enum = CommsData['MyCluster']['Enum In']
+    val = enum(enum.Val)
+    print(val)
+    lta.__set__('Enum',CommsData)
    
 #------------------all scripts should send their errors to labview------------
 except Exception as ex:

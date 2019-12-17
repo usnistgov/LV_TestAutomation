@@ -1,0 +1,17 @@
+<Cluster>
+<Name>clEnum</Name>
+<NumElts>2</NumElts>
+<EW>
+<Name>Enum In</Name>
+<Choice>Foo</Choice>
+<Choice>Bar</Choice>
+<Choice>Do</Choice>
+<Choice>Rey</Choice>
+<Choice>Mi</Choice>
+<Val>2</Val>
+</EW>
+<String>
+<Name>strTest</Name>
+<Val>My String</Val>
+</String>
+</Cluster>

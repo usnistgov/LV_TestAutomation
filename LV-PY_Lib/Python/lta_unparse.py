@@ -80,9 +80,22 @@ def __uParseClust(element,dictItem,tag):
     NumElts = etree.SubElement(Clust,'NumElts')
     NumElts.text = str(dictItem[tag].__len__())
     for item in dictItem[tag]:
-        uParse = __uParseType(type(dictItem[tag][item]))
-        uParse(Clust,dictItem[tag],item)
-            
+        if dictItem[tag][item].__class__.__name__ == "EW":
+            __uParseEnum(Clust,dictItem[tag],item)
+        else:
+            uParse = __uParseType(type(dictItem[tag][item]))
+            uParse(Clust,dictItem[tag],item)
+        
+def __uParseEnum(element,dictItem,tag):
+     ew = dictItem[tag]
+     EW = etree.SubElement(element,'EW')
+     Name = etree.SubElement(EW,'Name')     
+     Name.text = tag
+     for choice in ew.Choice:
+         ChoiceItem = etree.SubElement(EW,'Choice')
+         ChoiceItem.text = choice
+     val = etree.SubElement(EW,'Val')
+     val.text = str(ew.Val)                    
    
 def __uParseArray(element,item,tag):
     Array = etree.SubElement(element,'Array')
@@ -134,8 +147,11 @@ def Lta_Unparse(topDict):
     root_doc = etree.SubElement(root, "doc")
     try:
         for tag in topDict: 
-            uParse = __uParseType(type(topDict[tag]))
-            uParse(root_doc,topDict,tag)
+            if topDict[tag].__class__.__name__ == "EW":
+                uParse = __uParseEnum(root_doc,topDict,tag)
+            else:                    
+                uParse = __uParseType(type(topDict[tag]))
+                uParse(root_doc,topDict,tag)
 
     except Exception as e:
         a=Lta_Error(e,sys.exc_info())
@@ -153,7 +169,8 @@ def Lta_Unparse(topDict):
 if __name__=='__main__':
     import os
 
-    fileRelPath = 'TestCluster.xml'
+    fileRelPath = 'Test\unParseclEnumData.xml'
+#    fileRelPath = 'Test\TestCluster.xml'
 #    fileRelPath = 'err.xml'  #LabVIEW formatted error cluster
 #    fileRelPath = 'clData.xml'  # Cluster Data
 #    fileRelPath = 'arData.xml'  # Array Data

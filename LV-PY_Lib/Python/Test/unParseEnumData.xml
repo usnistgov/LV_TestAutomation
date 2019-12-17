@@ -1,0 +1,21 @@
+<Cluster>
+<Name>CommsData</Name>
+<NumElts>2</NumElts>
+<String>
+<Name>Command</Name>
+<Val>Set</Val>
+</String>
+<String>
+<Name>XMLData</Name>
+<Val>&lt;EW&gt;
+&lt;Name&gt;Enum In&lt;/Name&gt;
+&lt;Choice&gt;Foo&lt;/Choice&gt;
+&lt;Choice&gt;Bar&lt;/Choice&gt;
+&lt;Choice&gt;Do&lt;/Choice&gt;
+&lt;Choice&gt;Rey&lt;/Choice&gt;
+&lt;Choice&gt;Mi&lt;/Choice&gt;
+&lt;Val&gt;2&lt;/Val&gt;
+&lt;/EW&gt;
+</Val>
+</String>
+</Cluster>
