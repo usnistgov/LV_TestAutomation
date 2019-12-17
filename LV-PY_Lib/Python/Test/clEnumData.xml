@@ -2,9 +2,14 @@
 <Name>clEnum</Name>
 <NumElts>2</NumElts>
 <EW>
-<Name>Enum In</Name>
+<Name>Enum1</Name>
 <Choice>Foo</Choice>
 <Choice>Bar</Choice>
+<Choice>Ups</Choice>
+<Val>2</Val>
+</EW>
+<EW>
+<Name>Enum2</Name>
 <Choice>Do</Choice>
 <Choice>Rey</Choice>
 <Choice>Mi</Choice>

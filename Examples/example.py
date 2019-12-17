@@ -19,7 +19,8 @@ try:
         print CommsData['D']
         
     CommsData = lta.__get__('Enum')  
-    enum = CommsData['MyCluster']['Enum In']
+    enum = CommsData['MyCluster']['Enum1']
+    print(enum)
     val = enum(enum.Val)
     print(val)
     lta.__set__('Enum',CommsData)

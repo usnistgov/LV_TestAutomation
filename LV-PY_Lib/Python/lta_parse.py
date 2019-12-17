@@ -12,6 +12,11 @@ class EW:
     Choice = []
     Val = 0
     
+    def __init__(self):
+        self.name = ""
+        self.Choice = []
+        self.Val=0
+        
     def __repr__(self):
         return "EW"
     def __str__(self):
@@ -280,7 +285,7 @@ if __name__=='__main__':
     # Test the parser
     import os
  
-    fileRelPath = 'Test\enumData.xml'   # has 2 nested clusters    
+    fileRelPath = 'Test\clEnumData.xml'   # has 2 nested clusters    
 #    fileRelPath = 'err.xml'     #LabVIEW formatted error messege
 #    fileRelPath = 'clData.xml'  # Cluster Data
 #    fileRelPath = 'arData.xml'  # Array Data
