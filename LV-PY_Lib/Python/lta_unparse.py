@@ -155,12 +155,12 @@ def Lta_Unparse(topDict):
 
     except Exception as e:
         a=Lta_Error(e,sys.exc_info())
-        print a 
+        print( a) 
         raise e        
         
     retVal = ''
     for child in root_doc:
-        retVal = retVal + (etree.tostring(child, pretty_print=True))  
+        retVal = retVal + str(etree.tostring(child, pretty_print=True)) #I put a str() in there for python 37 compatability. Haven't done full testing on this change.   
 #    parser = etree.XMLParser(remove_blank_text=True)
 #    retVal = etree.tostring(etree.XML(retVal, parser=parser))
     return retVal        
@@ -169,7 +169,7 @@ def Lta_Unparse(topDict):
 if __name__=='__main__':
     import os
 
-    fileRelPath = 'Test\unParseclEnumData.xml'
+    fileRelPath = 'Test\\unParseclEnumData.xml' #I put a second '\' in there for python 37 compatability. Haven't done full testing on this change. 
 #    fileRelPath = 'Test\TestCluster.xml'
 #    fileRelPath = 'err.xml'  #LabVIEW formatted error cluster
 #    fileRelPath = 'clData.xml'  # Cluster Data
@@ -182,11 +182,11 @@ if __name__=='__main__':
         xml = open(fileDir).read()
         dataStruct = Lta_Parse(xml)
         dataStruct = Lta_Parse(dataStruct['CommsData']['XMLData'])
-        print dataStruct, '\n'
+        print( dataStruct, '\n')
         
         parsed = Lta_Unparse (dataStruct)
-        print parsed
+        print( parsed)
         
     except Exception as e:
         a=Lta_Error(e,sys.exc_info())
-        print a     
+        print( a)     

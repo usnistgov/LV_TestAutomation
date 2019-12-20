@@ -52,9 +52,9 @@ if __name__ =='__main__':
         q = 1/0
     except Exception as e:
         err = Lta_Error(e,sys.exc_info())
-        print err
+        print( err)
         errorDict = err.LvError(3,'abort')
-        print 'errorDict:\n' + str(errorDict) + '\n'
-        print Lta_Unparse(errorDict)
+        print( 'errorDict:\n' + str(errorDict) + '\n')
+        print( Lta_Unparse(errorDict))
         
         

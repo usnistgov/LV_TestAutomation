@@ -7,6 +7,13 @@
     have no concept of order, we must use Ordered Dictionaries instead.    
 """
 # class for the labview EMUM control
+
+import sys
+from collections import OrderedDict
+from lxml import etree
+from lta_err import Lta_Error
+import numpy as np
+
 class EW:
     Name = ""
     Choice = []
@@ -26,14 +33,6 @@ class EW:
     def __call__(self,i):
         return self.Choice[i]
     
-import sys
-from collections import OrderedDict
-from lxml import etree
-from lta_err import Lta_Error
-import numpy as np
-
-
-
 def getRootDoc(xml):
     xml = '<item>'+xml+'</item>'
     return etree.fromstring(xml)
@@ -237,7 +236,7 @@ def parseCluster(child):
 
     except Exception as e:
         a=Lta_Error(e,sys.exc_info())
-        print a  
+        print( a)  
         raise e
  
 def parseData(child):
@@ -296,11 +295,11 @@ if __name__=='__main__':
         fileDir = os.path.join(thisDir,fileRelPath)  
         xml = open(fileDir).read()
         dataStruct = Lta_Parse(xml)
-        print dataStruct
+        print( dataStruct)
         
     except Exception as e:
         a=Lta_Error(e,sys.exc_info())
-        print a  
+        print( a)  
             
          
        

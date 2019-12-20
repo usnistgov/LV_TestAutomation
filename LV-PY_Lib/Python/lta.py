@@ -56,7 +56,7 @@ class Lta():
         try:
             self.s.close()
         except IOError as e:
-            print e
+            print(e)
         
     def send_error(self,err,pri,sev):
         errDict = Lta_Command('ClientError',err.LvError(pri,sev))
@@ -86,7 +86,7 @@ class Lta():
                 n += 1
            
             if n>nmax:
-                print "Get was not acknowledged as completed"
+                print( "Get was not acknowledged as completed")
             if n>2:
                 return Error #only the last error will be reported for now
             else:
@@ -94,7 +94,7 @@ class Lta():
 
         except (IOError, Exception) as e:
             #clear the messages before raising e
-            print "Got exception, clearing get command messages"
+            print( "Got exception, clearing get command messages")
             Completed = False; n = 0; nmax = 50
             try:
                 while (not Completed) and n<=nmax:
@@ -128,7 +128,7 @@ class Lta():
                 n += 1
             
             if n>nmax:
-                print "Set was not acknowledged as completed"
+                print( "Set was not acknowledged as completed")
             if n>1:
                 return Error
             else:
@@ -136,7 +136,7 @@ class Lta():
 
         except (IOError, Exception) as e:
             #clear the messages before raising e
-            print "Got exception, clearing set command messages"
+            print( "Got exception, clearing set command messages")
             Completed = False; n = 0; nmax = 50
             try:
                 while (not Completed) and n<=nmax:
@@ -150,21 +150,21 @@ class Lta():
         #tries to run 'ntries' times if get error code 'ecode', waiting 'secwait' seconds before trying again
         #ecode is a set of error codes
         try:
-            print "Trying multiple runs"
+            print( "Trying multiple runs")
             #time.sleep(3)  #wait some time before running
             Error = self.__run__()
             j = 1
             while (Error['error constant']['code'] in ecode) and j<=ntries:
-                print Error['error']['code'],"Error. " #, Error['error']['source']
-                print "Trying again in", secwait, " seconds",
+                print( Error['error']['code'],"Error. ") #, Error['error']['source']
+                print( "Trying again in", secwait, " seconds",)
                 for k in range(1,secwait+1):
                     time.sleep(1)
-                    print ".",
-                print "Try to run ", j+1
+                    print( ".",)
+                print( "Try to run ", j+1)
                 Error = self.__run__()
                 j += 1
             if j>ntries:
-                print "Critical error: Run exceeded maximum allowed tries."
+                print( "Critical error: Run exceeded maximum allowed tries.")
                 raise Exception("Critical error: Run exceeded maximum allowed tries.")
             else:
                 return Error
@@ -191,16 +191,16 @@ class Lta():
                 n += 1
             
             if n>nmax:
-                print "Run was not acknowledged as completed"
+                print( "Run was not acknowledged as completed")
             if n>1:
                 return Error
             else:
-                print "Run complete"
+                print( "Run complete")
                 return NoError
             
         except (IOError, Exception) as e:
             #clear the messages before raising e
-            print "Got exception, clearing run command messages."
+            print( "Got exception, clearing run command messages.")
             Completed = False; n = 0; nmax = 50
             try:
                 while (not Completed) and n<=nmax:
