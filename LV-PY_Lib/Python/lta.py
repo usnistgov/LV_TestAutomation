@@ -210,6 +210,79 @@ class Lta():
                 raise type(e)("Could not clear messages." + e.message)
             raise type(e)("Fatal error: lta.__run__ command." + e.message)
 
+    def __runscriptuntiltimeout__(self,ScriptName,ntries,secwait,errorcode):
+        #tries to run 'ntries' times if get error code 'errorcode', waiting 'secwait' seconds before trying again
+        #ecode is a set of error codes
+        try:
+            Error = self.__runscript__(ScriptName)
+            j = 1
+            while j<=ntries and (Error['Error Out']['code'] in errorcode):
+                if (j==1):
+                    print( "Error " +str(Error['Error Out']['code'])+ " occured ")
+                print( "Trying again in "+ str(secwait)+ " seconds")
+                for k in range(1,secwait+1):
+                    time.sleep(1)
+                    print( str(k)+"seconds")
+                
+                if (j==ntries):
+                    print("Last Attempt take " +str(j+1))
+                else:
+                    print( "Running again take "+str(j+1))
+                    
+                Error = self.__runscript__(ScriptName)
+                j += 1
+            if j>ntries and (Error['Error Out']['code'] in errorcode):
+                print( "Critical error: Run exceeded maximum allowed tries.")
+                raise Exception("Critical error: Run exceeded maximum allowed tries.")
+            else:
+                return Error                
+        except (IOError, Exception) as e:
+            raise type(e)("Fatal error: lta.__multirun__ command." + e.message)
+    
+    def __runscript__(self,ScriptName):
+        """ for now, arg is the XML string of the run command """
+        try:
+            UsrTimeout = self.s.gettimeout()
+            self.s.settimeout(1)  
+            cmd = Lta_Command('run', ScriptName) 
+            self.s.settimeout(UsrTimeout)                                                                                                                                                                                               
+            xml = Lta_Unparse(cmd.cmdDict)
+            packet.SendPacket(self.s,xml)
+            Completed = False
+            n = 0; nmax = 50
+            #loop needed to receive all packages from LV
+            while (not Completed) and n<=nmax:
+                #time.sleep(.4)
+                CommsData = packet.ReceivePacket(self.s)
+                CommsData = Lta_Parse(CommsData);
+                #print CommsData
+                Completed = CommsData['CommsData']['Command']=='LtaRunComplete'
+                if Completed:
+                    NoError = Lta_Parse(CommsData['CommsData']['XMLData'])
+                else:
+                    Error = Lta_Parse(CommsData['CommsData']['XMLData'])    
+                n += 1
+            
+            if n>nmax:
+                print( "Run was not acknowledged as completed")
+            if n>1:
+                return Error
+            else:
+                print( "Run completed")
+                return NoError
+            
+        except (IOError, Exception) as e:
+            #clear the messages before raising e
+            print( "Got exception, clearing run command messages.")
+            Completed = False; n = 0; nmax = 50
+            try:
+                while (not Completed) and n<=nmax:
+                    CommsData = Lta_Parse(packet.ReceivePacket(self.s))
+                    Completed = CommsData['CommsData']['Command']=='LtaRunComplete'
+            except Exception as e:
+                raise type(e)("Could not clear messages." + e.message)
+            raise type(e)("Fatal error: lta.__run__ command." + e.message)
+
 if __name__=='__main__':
     try:
         execfile(sys.argv[1])
