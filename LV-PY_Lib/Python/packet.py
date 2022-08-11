@@ -3,13 +3,18 @@ from struct import unpack
 
 def SendPacket (socket,string):
     str_length = len(string)
-    if str_length < pow(2,32)-4:
+    if str_length < pow(2,16)-4:
         msb = (str_length >> 24) & 0xff
         mhsb = (str_length >> 16) & 0xff
         mlsb = (str_length >> 8) & 0x0ff
         lsb = str_length & 0xff    
         try:        
-            socket.sendall(chr(msb)+chr(mhsb)+chr(mlsb)+chr(lsb)+string)
+            # The below line works for python 2.7 but Python 3 socket library requres bytes, not strings
+            #socket.sendall(chr(msb)+chr(mhsb)+chr(mlsb)+chr(lsb)+string)  
+            #msg = chr(msb)+chr(mhsb)+chr(mlsb)+chr(lsb)+string
+            hdr=bytes([msb,mhsb,mlsb,lsb])
+            msg = hdr+string.encode('utf-8')
+            socket.sendall(msg)
         except IOError as e:
             raise e
 
@@ -32,6 +37,8 @@ def RecvAll (socket, size):
         packet = socket.recv(size -len(data))
         if not packet:
             return None
-        data += packet
+        # In Python 2, the data is a string, but in Python 3 it is bytes and must be decoded
+        data += packet.decode("UTF-8")
+        #data += packet
     return data
     

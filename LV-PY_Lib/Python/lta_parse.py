@@ -226,7 +226,9 @@ def parseCluster(child):
                 enum = parseEnum(node)    
                 retVal[name][enum.Name]=enum
             elif node.tag == 'Cluster':   # Nested Clusters
-                for subName, subVal in parseCluster(node).iteritems():
+                # The below worked for Python 2.7 but Python 3 change iteritems() to just items()
+                #for subName, subVal in parseCluster(node).iteritems():
+                for subName, subVal in parseCluster(node).items():    
                     retVal[name][subName]=subVal
             else:
                 dataList = parseNumeric(node)
