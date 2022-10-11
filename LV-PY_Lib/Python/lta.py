@@ -285,7 +285,9 @@ class Lta():
 
 if __name__=='__main__':
     try:
-        execfile(sys.argv[1])
+        #execfile(sys.argv[1])
+        exec(open(sys.argv[1]).read())   # Python 3 deprecated execfile
+
     except Exception as ex:
         lta = Lta("127.0.0.1",60100)
         lta.connect()
