@@ -10,7 +10,7 @@ import packet
 import sys
 import time
  
-class Lta_Command():
+class Lta_Command:
     """ This object is a wrapper dictionary that wraps an Lta "dataStruct" 
     dictionary in a command dictionary ready to be unparsed and sent to LabVIEW
 
@@ -87,8 +87,8 @@ class Lta():
            
             if n>nmax:
                 print( "Get was not acknowledged as completed")
-            if n>2:
-                return Error #only the last error will be reported for now
+            if n>2 or Error['error out']['status']:
+                raise Exception(Error) #only the last error will be reported for now
             else:
                 return Data
 
