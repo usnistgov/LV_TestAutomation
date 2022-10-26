@@ -43,7 +43,7 @@ class Lta_Command:
           
 class Lta():
     """Labview Test Automation class"""
-    def __init__(self,host=None,port=None):
+    def __init__(self,host="127.0.0.1",port=60100):
         self.host = host
         self.port = port
         self.s = ''
