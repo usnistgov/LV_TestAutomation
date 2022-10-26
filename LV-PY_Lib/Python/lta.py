@@ -5,6 +5,7 @@ from collections import OrderedDict
 from lta_parse import Lta_Parse
 from lta_unparse import Lta_Unparse
 from lta_err import Lta_Error
+from lta_err import LV_to_Py_Error
 import socket
 import packet
 import sys
@@ -88,7 +89,7 @@ class Lta():
             if n>nmax:
                 print( "Get was not acknowledged as completed")
             if n>2 or Error['error out']['status']:
-                raise Exception(Error)
+                raise LV_to_Py_Error(Error)
             else:
                 return Data
 
