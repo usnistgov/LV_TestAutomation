@@ -25,13 +25,10 @@ class Module:
             self.module_type = module_type
             self.class_type = class_type
             self.instance = instance
-            self.instance_name = self.module_type+'.'+self.class_type+'.'+self.instance
+            self.instance_name = self.module_type + '.' + self.class_type + '.' + self.instance
 
             self.config = None
             self.meas = None
 
-    def get_config(self,lta):
-        self.config = lta.__get__(self.instance_name+',Config')
-
-
-
+    def get(self, prop, lta):
+        self.config = lta.__get__(self.instance_name + ',' + prop)

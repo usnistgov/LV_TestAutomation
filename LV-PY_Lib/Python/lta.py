@@ -77,7 +77,7 @@ class Lta():
             #loop needed to receive all packages from LV
             while (not Completed) and n<=nmax:
                 CommsData = packet.ReceivePacket(self.s)
-                CommsData = Lta_Parse(CommsData);
+                CommsData = Lta_Parse(CommsData)
                 if CommsData['CommsData']['Command'] == 'Get':
                     Data = Lta_Parse(CommsData['CommsData']['XMLData'])
                 else:
@@ -88,22 +88,26 @@ class Lta():
             if n>nmax:
                 print( "Get was not acknowledged as completed")
             if n>2 or Error['error out']['status']:
-                raise Exception(Error) #only the last error will be reported for now
+                raise Exception(Error)
             else:
                 return Data
 
         except (IOError, Exception) as e:
             #clear the messages before raising e
-            print( "Got exception, clearing get command messages")
-            Completed = False; n = 0; nmax = 50
-            try:
-                while (not Completed) and n<=nmax:
-                    CommsData = Lta_Parse(packet.ReceivePacket(self.s))
-                    Completed = CommsData['CommsData']['Command']=='LtaGetComplete'
-            except Exception as e:
-                raise type(e)("Could not clear messages." + e.message)
-            raise type(e)("Fatal error: lta.__get__ command." + e.message)
-            
+            # print( "Got exception, clearing get command messages")
+            #if not Completed:
+            #    Completed = False; n = 0; nmax = 50
+            #    try:
+            #        while (not Completed) and n<=nmax:
+            #            CommsData = Lta_Parse(packet.ReceivePacket(self.s))
+            #            Completed = CommsData['CommsData']['Command']=='LtaGetComplete'
+            #    except Exception as e:
+            #        raise type(e)("Could not clear messages." + e.message)
+            if type(e.args[0]) == dict:
+                if type (e.args[0]['error out']) == OrderedDict:
+                    print (type(e)('\033[91m'+"Fatal error: lta.__get__ command." + e.args[0]['error out']['source']))
+            else:
+                print(e)
     def __set__(self,arg,dataStruct):
         try:
             XMLData = Lta_Unparse({'SetData': OrderedDict([('Arg',arg),('Data',Lta_Unparse(dataStruct))])})
