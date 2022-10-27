@@ -279,6 +279,7 @@ def Lta_Parse(xml):
         return   topDict     
 
     except Exception as e:
+        e.message = e.args[0]
         err = Lta_Error(e,sys.exc_info())
         raise err
         

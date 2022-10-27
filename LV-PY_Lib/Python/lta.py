@@ -70,7 +70,7 @@ class Lta():
             UsrTimeout = self.s.gettimeout()            
             self.s.settimeout(1)
             cmd = Lta_Command('get', arg)
-            self.s.settimeout(UsrTimeout)
+            #self.s.settimeout(UsrTimeout)
             xml = Lta_Unparse(cmd.cmdDict)
             packet.SendPacket(self.s,xml)
             Completed = False
@@ -85,7 +85,8 @@ class Lta():
                     Completed = CommsData['CommsData']['Command']=='LtaGetComplete'
                     Error = Lta_Parse(CommsData['CommsData']['XMLData'])
                 n += 1
-           
+
+            self.s.settimeout(UsrTimeout)
             if n>nmax:
                 print( "Get was not acknowledged as completed")
             if n>2 or Error['error out']['status']:
