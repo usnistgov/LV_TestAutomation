@@ -17,6 +17,11 @@ class Lta_Error(Exception):
     priority <pri>, and severity <sev> tags. """
     
     def __init__(self,origEx,origSysInfo):
+        if not hasattr(origEx,'message'):
+            if hasattr(origEx,'args'):
+                origEx.message = origEx.args[0]
+            else:
+                origEx.message = ('error unknown: original Exception has no arguments')
         self.origEx = origEx
         self.origSysInfo = origSysInfo
         super(Lta_Error,self).__init__(origEx.message,)

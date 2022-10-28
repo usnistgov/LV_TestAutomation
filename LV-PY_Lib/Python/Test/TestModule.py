@@ -15,6 +15,7 @@ module = NPModuleAcPwr('AcPwr', 'NHRDCPower', 'SolarArraySim', lta)
 #print(module.config)
 #module.set_config()
 module.get_meas()
+#print(module.meas)
 
 
 

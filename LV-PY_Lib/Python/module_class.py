@@ -59,4 +59,4 @@ class NPModuleAcPwr(NPModule):
 
     def get_meas(self):
         self.meas = self.lta.__get__(self.instance_name + ',Meas')
-        print(self.meas)
+        #print(self.meas)
