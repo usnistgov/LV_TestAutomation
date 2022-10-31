@@ -39,7 +39,7 @@ class NPModule:
 
 class NPModuleAcPwr(NPModule):
     def __init__(self,
-                 module_type=None,  # The type of the NPM
+                 module_type='AcPwr',  # The type of the NPM
                  class_type=None,
                  instance=None,
                  lta = None
@@ -60,3 +60,4 @@ class NPModuleAcPwr(NPModule):
     def get_meas(self):
         self.meas = self.lta.__get__(self.instance_name + ',Meas')
         #print(self.meas)
+
