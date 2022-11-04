@@ -3,3 +3,4 @@
 /*.lvlps
 /LV-PY_Lib/Scripts/*.pyc
 /LV-PY_Lib/Python/__pycache__
+.idea

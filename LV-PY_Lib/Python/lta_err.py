@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 """
+Exception classes for NIST Labview Test Automation (LTA)
+
 Created on Sun Feb 26 10:11:32 2017
+Revised on Tuesday, Oct 25 2022
 
 @author: AR
 """
+import sys
 import traceback
 from collections import OrderedDict
 
@@ -13,6 +17,11 @@ class Lta_Error(Exception):
     priority <pri>, and severity <sev> tags. """
     
     def __init__(self,origEx,origSysInfo):
+        if not hasattr(origEx,'message'):
+            if hasattr(origEx,'args'):
+                origEx.message = origEx.args[0]
+            else:
+                origEx.message = ('error unknown: original Exception has no arguments')
         self.origEx = origEx
         self.origSysInfo = origSysInfo
         super(Lta_Error,self).__init__(origEx.message,)
@@ -44,7 +53,23 @@ class Lta_Error(Exception):
         errorDict = {'error out' : OrderedDict([('status',True),('code', 30000),('source', Source)])}
         
         return errorDict
-        
+
+
+class LV_to_Py_Error(Exception):
+    """
+    When an error comes from the labview side
+    """
+    def __init__(self, error, message="Error was received from LabVIEW: "):
+        self.status = error['error out']['status']
+        self.code = error['error out']['code']
+        self.source = error['error out']['source']
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message} code: {self.code}, source: {self.source}'
+
+
 if __name__ =='__main__':
     import sys
     from lta_unparse import Lta_Unparse

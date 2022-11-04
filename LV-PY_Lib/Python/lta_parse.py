@@ -148,7 +148,7 @@ def parseEnum(child):
         tag = node.tag
         if tag == 'Name':
             name = node.text
-            retVal.Name= name
+            retVal.Name = name
         elif node.tag == 'Choice':
             val = node.text
             if val is None:
@@ -169,15 +169,22 @@ def parseArray(node):
     tempList = []
     created = False    # will be set to true when the array is created
     arrayOfClusters = False
-    for ele in node:
+    for idx, ele in enumerate(node):
         tag = ele.tag
         if tag == 'Name':
+            if ele.text == None:
+                ele.text = f'element {idx}'
+                idx+=1
             name = ele.text
         elif tag == 'Dimsize':
             dimSizes.append(int(ele.text)) 
         elif tag == 'Cluster':
             arrayOfClusters = True
             tempList.append(parseCluster(ele))
+        elif tag == 'SGLWaveform':
+            arrayOfClusters = True
+            tempList.append(parseSGLWaveform(ele))
+
         else:                                   # after the <Name> and <Dimsize> elements, there should only be data remaining
             if created == False:                # the first data element
                 XMLType = tag
@@ -203,13 +210,12 @@ def parseArray(node):
 
 def parseCluster(child):
     try:
-#        retVal = {}              # need to used OrderedDict
         retVal = OrderedDict()
+        #idx = 0
         for node in child:
             tag = node.tag
             if tag == 'Name':
                 name = node.text
-#                retVal[name] = {}
                 retVal[name] = OrderedDict()  #need to use OrderedDict
             elif node.tag == 'NumElts':
                pass
@@ -225,6 +231,13 @@ def parseCluster(child):
             elif node.tag == 'EW':
                 enum = parseEnum(node)    
                 retVal[name][enum.Name]=enum
+            elif node.tag == 'Timestamp':
+                # a timestamp is a container for a cluster
+                for subName, subVal in parseTimestamp(node).items():
+                    retVal[name][subName] = subVal
+            elif node.tag == 'LvVariant':  # nested Varient
+                for subName, subVal in parseLvVariant(node).items():
+                    retVal[name][subName] = subVal
             elif node.tag == 'Cluster':   # Nested Clusters
                 # The below worked for Python 2.7 but Python 3 change iteritems() to just items()
                 #for subName, subVal in parseCluster(node).iteritems():
@@ -240,7 +253,118 @@ def parseCluster(child):
         a=Lta_Error(e,sys.exc_info())
         print( a)  
         raise e
- 
+
+def parseSGLWaveform(child):
+    try:
+        retVal = OrderedDict()
+        for node in child:
+            tag = node.tag
+            if tag == 'Name':
+                name = node.text
+                retVal[name] = OrderedDict()  # need to use OrderedDict
+            elif node.tag == 'NumElts':
+                pass
+            elif tag == 'Cluster':
+                # SGLWaveform is a container for a cluster
+                for subName, subVal in  parseCluster(node).items():
+                    retVal[name][subName]=subVal
+            else:
+                raise Exception(f'parseSGLWaveform expected a Cluster but the {tag=}')
+
+        return retVal
+
+    except Exception as e:
+        a = Lta_Error(e,sys.exc_info())
+        print(a)
+        raise e
+
+def parseTimestamp(child):
+    """
+     two issues with the LabVIEW timestamp is that the I32 values have no XML names and they also should really be U32s
+     so we start out by iterating through the children and giving the elements names
+    Args:
+        child:
+
+    Returns:
+        timestamp ordered dictionary
+
+    """
+    # Replace the empty Name field with an appropriate name.
+    for node in child:
+        if node.tag == 'Cluster':
+            idx = 0
+            for elem in node:
+                if elem.tag == "I32":
+                    for item in elem:
+                        if item.tag == 'Name':
+                            match idx:
+                                case 0:
+                                    item.text = "low frac"
+                                case 1:
+                                    item.text = "high frac"
+                                case 2:
+                                    item.text = "low sec"
+                                case 3:
+                                    item.text = "high sec"
+                                case _:
+                                    raise Exception('Ill formed timestamp, expected 4 I32 elements')
+                            idx+=1
+                            #print(item.text)
+
+    try:
+        retVal = OrderedDict()
+        for node in child:
+            if node.tag == 'Name':
+                name = node.text
+                retVal[name] = OrderedDict()  # need to use OrderedDict
+            elif node.tag == 'NumElts':
+                pass
+            elif node.tag == 'Cluster':
+                # Timestamp is a container for a cluster
+                for subName, subVal in parseCluster(node).items():
+                    retVal[name][subName]=subVal
+            else:
+                raise Exception(f"parseTimestamp expected a Cluster but the {node.tag=}")
+
+        return retVal
+
+    except Exception as e:
+        a = Lta_Error(e,sys.exc_info())
+        print(a)
+        raise e
+
+def parseLvVariant(child):
+    """
+    LabVIEW varient handler.
+    For now, this will handle variants that are clusters.
+    ToDo:  This may need to be expanded in the future to handle additional variant types
+    Args:
+        child:
+
+    Returns:
+        retval ordered dictionary
+
+    """
+    retVal = OrderedDict()
+    try:
+        for node in child:
+            if node.tag == 'Name':
+                name = node.text
+                retVal[name] = OrderedDict()
+            elif node.tag == 'Cluster':
+                for subName, subVal in parseCluster(node).items():
+                    retVal[name][subName] = subVal
+            else:
+                raise Exception(f"LvVariant type contained unexpected element type {node.tag=}, lta_parse may need to have this varient type added")
+
+        return retVal
+
+    except Exception as e:
+        a = Lta_Error(e, sys.exc_info())
+        print(a)
+        raise e
+
+
 def parseData(child):
     retVal = {}
     if child.tag == 'String':
@@ -279,6 +403,7 @@ def Lta_Parse(xml):
         return   topDict     
 
     except Exception as e:
+        e.message = e.args[0]
         err = Lta_Error(e,sys.exc_info())
         raise err
         

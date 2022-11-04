@@ -5,12 +5,13 @@ from collections import OrderedDict
 from lta_parse import Lta_Parse
 from lta_unparse import Lta_Unparse
 from lta_err import Lta_Error
+from lta_err import LV_to_Py_Error
 import socket
 import packet
 import sys
 import time
  
-class Lta_Command():
+class Lta_Command:
     """ This object is a wrapper dictionary that wraps an Lta "dataStruct" 
     dictionary in a command dictionary ready to be unparsed and sent to LabVIEW
 
@@ -42,7 +43,7 @@ class Lta_Command():
           
 class Lta():
     """Labview Test Automation class"""
-    def __init__(self,host=None,port=None):
+    def __init__(self,host="127.0.0.1",port=60100):
         self.host = host
         self.port = port
         self.s = ''
@@ -69,7 +70,7 @@ class Lta():
             UsrTimeout = self.s.gettimeout()            
             self.s.settimeout(1)
             cmd = Lta_Command('get', arg)
-            self.s.settimeout(UsrTimeout)
+            #self.s.settimeout(UsrTimeout)
             xml = Lta_Unparse(cmd.cmdDict)
             packet.SendPacket(self.s,xml)
             Completed = False
@@ -77,33 +78,38 @@ class Lta():
             #loop needed to receive all packages from LV
             while (not Completed) and n<=nmax:
                 CommsData = packet.ReceivePacket(self.s)
-                CommsData = Lta_Parse(CommsData);
+                CommsData = Lta_Parse(CommsData)
                 if CommsData['CommsData']['Command'] == 'Get':
                     Data = Lta_Parse(CommsData['CommsData']['XMLData'])
                 else:
                     Completed = CommsData['CommsData']['Command']=='LtaGetComplete'
                     Error = Lta_Parse(CommsData['CommsData']['XMLData'])
                 n += 1
-           
+
+            self.s.settimeout(UsrTimeout)
             if n>nmax:
                 print( "Get was not acknowledged as completed")
-            if n>2:
-                return Error #only the last error will be reported for now
+            if n>2 or Error['error out']['status']:
+                raise LV_to_Py_Error(Error)
             else:
                 return Data
 
         except (IOError, Exception) as e:
             #clear the messages before raising e
-            print( "Got exception, clearing get command messages")
-            Completed = False; n = 0; nmax = 50
-            try:
-                while (not Completed) and n<=nmax:
-                    CommsData = Lta_Parse(packet.ReceivePacket(self.s))
-                    Completed = CommsData['CommsData']['Command']=='LtaGetComplete'
-            except Exception as e:
-                raise type(e)("Could not clear messages." + e.message)
-            raise type(e)("Fatal error: lta.__get__ command." + e.message)
-            
+            # print( "Got exception, clearing get command messages")
+            #if not Completed:
+            #    Completed = False; n = 0; nmax = 50
+            #    try:
+            #        while (not Completed) and n<=nmax:
+            #            CommsData = Lta_Parse(packet.ReceivePacket(self.s))
+            #            Completed = CommsData['CommsData']['Command']=='LtaGetComplete'
+            #    except Exception as e:
+            #        raise type(e)("Could not clear messages." + e.message)
+            if type(e.args[0]) == dict:
+                if type (e.args[0]['error out']) == OrderedDict:
+                    print (type(e)('\033[91m'+"Fatal error: lta.__get__ command." + e.args[0]['error out']['source']))
+            else:
+                print(e)
     def __set__(self,arg,dataStruct):
         try:
             XMLData = Lta_Unparse({'SetData': OrderedDict([('Arg',arg),('Data',Lta_Unparse(dataStruct))])})
