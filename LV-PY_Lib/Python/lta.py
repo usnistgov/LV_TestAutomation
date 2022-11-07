@@ -126,7 +126,7 @@ class Lta():
                 CommsData = packet.ReceivePacket(self.s)
                 CommsData = Lta_Parse(CommsData);
                 #print CommsData
-                Completed = CommsData['CommsData']['Command']=='LtaSetComplete'
+                Completed = CommsData['CommsData']['Command']=='LtaScriptComplete'
                 if Completed:
                     NoError = Lta_Parse(CommsData['CommsData']['XMLData'])
                 else:
@@ -148,6 +148,54 @@ class Lta():
                 while (not Completed) and n<=nmax:
                     CommsData = Lta_Parse(packet.ReceivePacket(self.s))
                     Completed = CommsData['CommsData']['Command']=='LtaSetComplete'
+            except Exception as e:
+                raise type(e)("Could not clear messages." + e.message)
+            raise type(e)("Fatal error: lta.__set__ command." + e.message)
+
+    def __send_script__(self,scriptArray):
+        """
+        SSM scripts are arrays of strings that get sent to LabVIEW withthe argument "script"
+        :param scriptArray: 
+        :return: 
+        """
+        try:
+            XMLData = Lta_Unparse({'Array': scriptArray.cmd_list})
+            cmdDict = Lta_Command('script',XMLData).cmdDict
+            xml = Lta_Unparse(cmdDict)
+            UsrTimeout = self.s.gettimeout()
+            self.s.settimeout(1)
+            packet.SendPacket(self.s, xml)
+            self.s.settimeout(UsrTimeout)
+            Completed = False
+            n = 0;
+            nmax = 50
+            # loop needed to receive all packages from LV
+            while (not Completed) and n <= nmax:
+                CommsData = packet.ReceivePacket(self.s)
+                CommsData = Lta_Parse(CommsData);
+                # print CommsData
+                Completed = CommsData['CommsData']['Command'] == 'LtaScriptReceived'
+                if Completed:
+                    NoError = Lta_Parse(CommsData['CommsData']['XMLData'])
+                else:
+                    Error = Lta_Parse(CommsData['CommsData']['XMLData'])
+                n += 1
+
+            if n > nmax:
+                print("Set was not acknowledged as completed")
+            if n > 1:
+                return Error
+            else:
+                return NoError
+
+        except:
+            #clear the messages before raising e
+            print( "Got exception, clearing set command messages")
+            Completed = False; n = 0; nmax = 50
+            try:
+                while (not Completed) and n<=nmax:
+                    CommsData = Lta_Parse(packet.ReceivePacket(self.s))
+                    Completed = CommsData['CommsData']['Command']=='LtaScriptReceived'
             except Exception as e:
                 raise type(e)("Could not clear messages." + e.message)
             raise type(e)("Fatal error: lta.__set__ command." + e.message)
@@ -250,7 +298,7 @@ class Lta():
         try:
             UsrTimeout = self.s.gettimeout()
             self.s.settimeout(1)  
-            cmd = Lta_Command('run', ScriptName) 
+            cmd = Lta_Command('script','', ScriptName)
             self.s.settimeout(UsrTimeout)                                                                                                                                                                                               
             xml = Lta_Unparse(cmd.cmdDict)
             packet.SendPacket(self.s,xml)
