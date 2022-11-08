@@ -55,6 +55,15 @@ def __uParseNum(element,item,tag):
             Val.text =  Val.text.replace ('(','')
             Val.text =  Val.text.replace (')','')
         
+def __uParseString(element,item):
+    XMLType = npType_to_XMLType(type(item))
+    subEl = etree.SubElement(element,XMLType)
+    Name = etree.SubElement(subEl,'Name')
+    Name.text = 'item'
+    Val = etree.SubElement(subEl,'Val')
+    Val.text = item
+
+
 
 def __uParseList(element,item,tag):
 # if it is a list, it must be an an array type other than numpy
@@ -65,10 +74,16 @@ def __uParseList(element,item,tag):
         dim = item[tag].__len__()   # TODO one dimensional only.  If more than 1-D will need to revise
         Dimsize = etree.SubElement(Array,'Dimsize')
         Dimsize.text = str(dim)
+
+
         for ele in item[tag]:
-            for item in ele:
-                uParse = __uParseType(type(ele[item]))
-                uParse(Array,ele,item)                
+            # if ele is a string, this is a list of strings
+            if isinstance(ele, str):
+                __uParseString(Array,ele)
+            else:
+                for item in ele:
+                    uParse = __uParseType(type(ele[item]))
+                    uParse(Array,ele,item)
         
     except Exception as e:
         raise e        
