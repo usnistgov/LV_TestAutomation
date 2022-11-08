@@ -65,20 +65,20 @@ class SsmModuleCmd(SsmBaseCmd):
     Module Commands have an address <Module Type>.<Class Type>.<Instance>
     """
     def __init__(self, module_type, class_type, instance, cmd):
-        for v in locals():
-            if not isinstance(cmd, str):
-                raise TypeError(f"{v=} tis not a string")
-        cmd = cmd + ',#' + module_type + '.' + class_type + "." + instance
+        if module_type == None:
+            cmd = cmd + ',#' + class_type + "." + instance
+        else:
+            cmd = cmd + ',#' + module_type + '.' + class_type + "." + instance
         super(SsmModuleCmd, self).__init__(cmd)
 
 
 class SsmAcPwrSetParameter(SsmModuleCmd):
 
-    def __init__(self, module_type, class_type, instance, cmd='AcPwrSetParameter', AcDc='AC', parameter=None, phase='0', value=None):
+    def __init__(self, class_type, instance, cmd='AcPwrSetParameter', AcDc='AC', parameter=None, phase='0', value=None):
         if parameter == None:
             raise ValueError ('Parameter must be a string')
         cmd = cmd + ',' + AcDc + ',' + parameter + ',' + phase + ',' + value
-        super(SsmAcPwrSetParameter, self).__init__(module_type, class_type, instance, cmd)
+        super(SsmAcPwrSetParameter, self).__init__(None, class_type, instance, cmd)
 
 
 if __name__=='__main__':

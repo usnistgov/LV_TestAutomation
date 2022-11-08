@@ -68,7 +68,7 @@ class Lta():
         """ for now, arg is the XML string of the get command """
         try:
             UsrTimeout = self.s.gettimeout()            
-            self.s.settimeout(1)
+            self.s.settimeout(2)
             cmd = Lta_Command('get', arg)
             #self.s.settimeout(UsrTimeout)
             xml = Lta_Unparse(cmd.cmdDict)
@@ -126,7 +126,7 @@ class Lta():
                 CommsData = packet.ReceivePacket(self.s)
                 CommsData = Lta_Parse(CommsData);
                 #print CommsData
-                Completed = CommsData['CommsData']['Command']=='LtaScriptComplete'
+                Completed = CommsData['CommsData']['Command']=='LtaSetComplete'
                 if Completed:
                     NoError = Lta_Parse(CommsData['CommsData']['XMLData'])
                 else:
@@ -163,9 +163,9 @@ class Lta():
             cmdDict = Lta_Command('script',XMLData).cmdDict
             xml = Lta_Unparse(cmdDict)
             UsrTimeout = self.s.gettimeout()
-            self.s.settimeout(1)
+            self.s.settimeout(5)
             packet.SendPacket(self.s, xml)
-            self.s.settimeout(UsrTimeout)
+            #self.s.settimeout(UsrTimeout)
             Completed = False
             n = 0;
             nmax = 50
@@ -180,6 +180,7 @@ class Lta():
                 else:
                     Error = Lta_Parse(CommsData['CommsData']['XMLData'])
                 n += 1
+            self.s.settimeout(UsrTimeout)
 
             if n > nmax:
                 print("Set was not acknowledged as completed")
