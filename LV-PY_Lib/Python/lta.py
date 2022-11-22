@@ -126,7 +126,7 @@ class Lta():
                 CommsData = packet.ReceivePacket(self.s)
                 CommsData = Lta_Parse(CommsData);
                 #print CommsData
-                Completed = CommsData['CommsData']['Command']=='LtaScriptComplete'
+                Completed = CommsData['CommsData']['Command']=='LtaSetComplete'
                 if Completed:
                     NoError = Lta_Parse(CommsData['CommsData']['XMLData'])
                 else:
