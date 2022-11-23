@@ -25,12 +25,12 @@ class Tests(object):
         module.get_config()
         print(module.config)
         module.set_config()
-        module.get_meas()
-        print(module.meas)
+        #module.get_meas()
+        #print(module.meas)
 
     def test_fgen(self):
         print ('testing FGen.NiPxi6733')
-        module = M.NPModuleFGen(class_type='NiPxi6733', lta=self.lta)
+        module = M.NPModuleFGen(class_type='NiPxi6733', instance='PMU (SteadyState)', lta=self.lta)
         module.get_params()
         print(module.params)
         module.set_params()
@@ -77,10 +77,10 @@ class Tests(object):
 t = Tests()
 
 test_list = [
-             #t.test_acpwr,
-             t.test_fgen,
-             #t.test_analysis
-              t.test_sync
+             #t.test_acpwr,     # testing ACPwr.NHRDCPwr.SolarArraySim
+             t.test_fgen,       # testing Analysis.PmuAnalysis.Pmu (SteadyState)
+             t.test_analysis,   # testing Analysis.PmuAnalysis.Pmu (SteadyState)
+             t.test_sync        # testing Sync.PXI_MultiTrig
             ]
 
 for test in test_list:
