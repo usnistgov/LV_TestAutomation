@@ -349,6 +349,7 @@ if __name__=='__main__':
         err = Lta_Error(ex,sys.exc_info())
         lta.send_error(err,3,'Abort')
         lta.close()
+        print(ex)
 
 
 

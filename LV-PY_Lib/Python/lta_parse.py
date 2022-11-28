@@ -313,13 +313,13 @@ def parseTimestamp(child):
                             
                             # the old way of doing it
                             if idx == 0:
-                                item.txt = "low frac"
+                                item.text = "low frac"
                             elif idx == 1:
-                                item.txt = "high frac"
+                                item.text = "high frac"
                             elif idx == 2:
                                 item.text = "low sec"
                             elif idx == 3:
-                                item.txt = "high sec"
+                                item.text = "high sec"
                             else:
                                 raise Exception('Ill formed timestamp, expected 4 I32 elements')
                                                             
