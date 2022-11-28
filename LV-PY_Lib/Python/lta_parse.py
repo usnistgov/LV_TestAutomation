@@ -297,17 +297,32 @@ def parseTimestamp(child):
                 if elem.tag == "I32":
                     for item in elem:
                         if item.tag == 'Name':
-                            match idx:
-                                case 0:
-                                    item.text = "low frac"
-                                case 1:
-                                    item.text = "high frac"
-                                case 2:
-                                    item.text = "low sec"
-                                case 3:
-                                    item.text = "high sec"
-                                case _:
-                                    raise Exception('Ill formed timestamp, expected 4 I32 elements')
+                            
+                            # match only works for python 3.10 or above
+                            # match idx:
+                            #     case 0:
+                            #         item.text = "low frac"
+                            #     case 1:
+                            #         item.text = "high frac"
+                            #     case 2:
+                            #         item.text = "low sec"
+                            #     case 3:
+                            #         item.text = "high sec"
+                            #     case _:
+                            #         raise Exception('Ill formed timestamp, expected 4 I32 elements')
+                            
+                            # the old way of doing it
+                            if idx == 0:
+                                item.txt = "low frac"
+                            elif idx == 1:
+                                item.txt = "high frac"
+                            elif idx == 2:
+                                item.text = "low sec"
+                            elif idx == 3:
+                                item.txt = "high sec"
+                            else:
+                                raise Exception('Ill formed timestamp, expected 4 I32 elements')
+                                                            
                             idx+=1
                             #print(item.text)
 
